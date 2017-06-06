@@ -10,7 +10,7 @@ class DoubanBriefSpider(scrapy.Spider):
     allowed_domains = ["read.douban.com"]
     start_urls = ['https://read.douban.com/ebooks/']
 
-    domain = "https://read.douban.com/"
+    domain = "https://read.douban.com"
     channel = "douban"
 
     def parse(self, response):
@@ -29,7 +29,8 @@ class DoubanBriefSpider(scrapy.Spider):
 
         for book in book_list:
 
-            detail_url = book.css('div.info div.title a::attr(href)').extract_first()
+            detail_url = book.css(
+                'div.info div.title a::attr(href)').extract_first()
             item_id = SpiderDoubanUtil.get_item_id(detail_url)
             if item_id is not None:
                 custom_item_id = self.channel + '_' + item_id
@@ -40,12 +41,18 @@ class DoubanBriefSpider(scrapy.Spider):
                     channel=self.channel,
                     created_time=now,
                     update_time=now,
-                    recommend=book.css('div.info div.article-desc-brief::text').extract_first(),
+                    recommend=book.css(
+                        'div.info div.article-desc-brief::text').extract_first(),
                     detail_url=url,
                     spider_status=0
                 )
 
-        next_page = response.css('div.pagination li.next a::attr(href)').extract_first()
+        next_page = response.css(
+            'div.pagination li.next a::attr(href)').extract_first()
         if next_page is not None:
-            yield scrapy.Request(url=self.domain + next_page,
-                                 callback=self.parse_list)
+            if next_page[0] == '?':
+                yield scrapy.Request(url=response.url + next_page,
+                                     callback=self.parse_list)
+            else:
+                yield scrapy.Request(url=self.domain + next_page,
+                                     callback=self.parse_list)

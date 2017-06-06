@@ -38,3 +38,27 @@ class SpiderDoubanUtil(object):
                 item_id = clean[0]
 
         return item_id
+
+    @staticmethod
+    def process_price(price_str):
+        """将price从string变成int
+        Args:
+            url (string): url链接
+
+        Returns:
+            price (int): 商品价格
+        """
+
+        price = 0
+        if price_str is not None:
+            # if u'免费' in price_str:
+                # price = 0
+            # else:
+
+            price_str = price_str.replace(u'¥', '')
+            price_str = price_str.replace(u'￥', '')
+            price = int(float(price_str) * 100)
+        else:
+            price = 0
+
+        return price

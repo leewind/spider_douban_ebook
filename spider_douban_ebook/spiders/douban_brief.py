@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import time
+import urllib
 import scrapy
+from urlparse import urlparse
 from ..utils import SpiderDoubanUtil
 from ..items import LSpiderBookBriefInfo
 
@@ -50,8 +52,15 @@ class DoubanBriefSpider(scrapy.Spider):
         next_page = response.css(
             'div.pagination li.next a::attr(href)').extract_first()
         if next_page is not None:
+            ourl = urlparse(response.url)
+
+            print '\n------------------------'
+            print ourl.path
+            print ourl.path + next_page
+            print '------------------------\n'
+
             if next_page[0] == '?':
-                yield scrapy.Request(url=response.url + next_page,
+                yield scrapy.Request(url=self.domain + ourl.path + next_page,
                                      callback=self.parse_list)
             else:
                 yield scrapy.Request(url=self.domain + next_page,

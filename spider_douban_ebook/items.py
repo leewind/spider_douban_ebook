@@ -29,3 +29,13 @@ class LSpiderBookBriefInfo(scrapy.Item):
     update_time = scrapy.Field()
     recommend = scrapy.Field()
     spider_status = scrapy.Field()
+
+class LSpiderTopicInfo(scrapy.Item):
+    topic_type = scrapy.Field()
+    name = scrapy.Field()
+    content = scrapy.Field()
+    published_time = scrapy.Field()
+    cover_image = scrapy.Field()
+    detail_url = scrapy.Field()
+    books = scrapy.Field()
+    channel = scrapy.Field()

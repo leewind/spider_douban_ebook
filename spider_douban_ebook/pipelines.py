@@ -5,8 +5,9 @@
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
 # See: http://doc.scrapy.org/en/latest/topics/item-pipeline.html
 import MySQLdb as mdb
-from items import LSpiderBookBriefInfo, LSpiderBookInfo
+from items import LSpiderBookBriefInfo, LSpiderBookInfo, LSpiderTopicInfo
 from utils import SpiderDoubanUtil
+
 
 class SpiderDoubanEbookPipeline(object):
     """数据爬取完成之后对数据进行处理
@@ -80,6 +81,28 @@ class SpiderDoubanEbookPipeline(object):
         #     book_tag_reflection_sql = 'INSERT IGNORE INTO book_tag_reflection (tag_name, book_custom_item_id) values (%s, %s)'
         #     cursor.execute(book_tag_reflection_sql, tag_info)
 
+    def process_topic(self, item, cursor):
+        topic = [
+            item.get('topic_type'),
+            item.get('name'),
+            item.get('content'),
+            item.get('published_time'),
+            item.get('cover_image'),
+            item.get('detail_url'),
+            item.get('channel')
+        ]
+        topic_insert_sql = 'INSERT IGNORE INTO rough_topic_info (topic_type, name, content, published_time, cover_image, detail_url, channel) values(%s, %s, %s, %s, %s, %s, %s)'
+        cursor.execute(topic_insert_sql, topic)
+
+        topic_id = cursor.lastrowid
+        for custom_item_id in item.get('books'):
+            topic_related_book = [
+                topic_id,
+                custom_item_id
+            ]
+            topic_related_book_insert_sql = 'INSERT IGNORE INTO rough_topic_related_book (topic_id, custom_item_id) values(%s, %s)'
+            cursor.execute(topic_related_book_insert_sql, topic_related_book)
+
     def process_item(self, item, spider):
         """处理item数据
 
@@ -97,6 +120,8 @@ class SpiderDoubanEbookPipeline(object):
             self.process_book(item, cursor)
         elif type(item) is LSpiderBookBriefInfo:
             self.process_book_brief(item, cursor)
+        elif type(item) is LSpiderTopicInfo:
+            self.process_topic(item, cursor)
 
         # 每次完成之后都需要关闭游标
         cursor.close()
